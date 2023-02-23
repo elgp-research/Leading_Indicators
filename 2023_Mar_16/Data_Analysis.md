@@ -22,6 +22,8 @@ IPUMS micro data series.
 - library(ggpubr)
 - library(survey)
 
+## Importing Data
+
 ``` r
 dat <- read.csv("ipums_nresidents.csv")
 ```

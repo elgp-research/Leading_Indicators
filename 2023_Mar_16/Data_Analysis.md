@@ -11,17 +11,45 @@ a markdown file (.md) suitable for publishing to GitHub is generated.
 
 You can include R code in the document as follows:
 
-``` r
-summary(cars)
-```
-
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+    ## ✔ ggplot2 3.4.0     ✔ purrr   1.0.1
+    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
+    ## ✔ tidyr   1.2.1     ✔ stringr 1.5.0
+    ## ✔ readr   2.1.3     ✔ forcats 0.5.2
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
+    ## 
+    ## Attaching package: 'DT'
+    ## 
+    ## 
+    ## The following objects are masked from 'package:shiny':
+    ## 
+    ##     dataTableOutput, renderDataTable
+    ## 
+    ## 
+    ## Loading required package: grid
+    ## 
+    ## Loading required package: Matrix
+    ## 
+    ## 
+    ## Attaching package: 'Matrix'
+    ## 
+    ## 
+    ## The following objects are masked from 'package:tidyr':
+    ## 
+    ##     expand, pack, unpack
+    ## 
+    ## 
+    ## Loading required package: survival
+    ## 
+    ## 
+    ## Attaching package: 'survey'
+    ## 
+    ## 
+    ## The following object is masked from 'package:graphics':
+    ## 
+    ##     dotchart
 
 ## Including Plots
 

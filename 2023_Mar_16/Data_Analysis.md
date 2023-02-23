@@ -260,5 +260,34 @@ dtaDesign_post <- svydesign(id     = ~CLUSTER,
                            data    = post_COVID)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to
-prevent printing of the R code that generated the plot.
+## Cross Tabulations for Descriptive Analysis
+
+### 1. Top 5 Occupations
+
+``` r
+# 1. Occupation => describe the top 10 jobs held by migrant workers 
+table <- svytable(~OCC+YEAR, design = dtaDesign_pre)
+df_pre <- as.data.frame.matrix(table) 
+df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
+#_________________________________________#
+table <- svytable(~OCC+YEAR, design = dtaDesign_post)
+df_post <- data.frame(rbind(table))
+df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
+#_________________________________________#
+df_occ <- df_pre %>% 
+  left_join(df_post, by = c("Variable")) %>% 
+  filter(Variable != "")
+# calculating top 10 OCCUPATIONS that new residents are working in 
+df_occ <- df_occ %>% 
+  gather(YEAR, count, `2018`:X2021) %>% 
+  group_by(YEAR) %>% 
+  arrange(desc(count)) %>%
+  group_by(YEAR) %>% 
+  mutate(prop_count = count/sum(count)) %>% 
+  slice(1:5) %>% 
+  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", Variable))
+```
+
+## Ranking of Top 5 Occupations Among New Residents
+
+![](Data_Analysis_files/figure-gfm/visual_top5-1.png)<!-- -->

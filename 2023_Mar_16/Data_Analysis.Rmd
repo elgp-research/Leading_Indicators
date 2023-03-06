@@ -412,7 +412,7 @@ gr4 <-  ggplot(df_occtemp_21, aes(x=reorder(Variable, prop_count), y=prop_count)
 ggarrange(gr1, gr2, gr3, gr4)
 ```
 
-### 2. Top Places of Work Outside Philadelphia 
+### 2. Are New Residents Mostly Working in Philadelphia?
 
 ``` {r workplace, include = TRUE}
 ###########################################
@@ -520,36 +520,59 @@ df_pwork %>%
 # COUNTY FIPS CODE: 17 => Bucks County, PA
 #:::::::::::::::::::::::::::::::::::::::::
 ###########################################
+```
+
+### 3. Is Remote Work Higher among New Residents After COVID-19
+
+```{r remotework, include = TRUE}
 # 7a. Remote work => is remote work higher in migrants who came to Philly after the pandemic
 table <- svytable(~TRANWORK+YEAR, design = dtaDesign_pre)
 df_pre <- as.data.frame.matrix(table) 
 df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble() 
-df_pre <- df_pre %>% filter(Variable == "Worked at home")
 #_________________________________________#
 table <- svytable(~TRANWORK+YEAR, design = dtaDesign_post)
 df_post <- data.frame(rbind(table))
 df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
-df_post <- df_post %>% filter(Variable == "Worked at home") 
 #_________________________________________#
 df_remote <- df_pre %>% 
   left_join(df_post, by = c("Variable"))
+#_________________________________________#
+# calculating proportion of remote work among new residents
+df_remote <- df_remote %>% 
+  gather(Year, count, `2018`:X2021) %>% 
+  group_by(Year) %>% 
+  mutate(remote_prop = count[which(Variable == "80")]/sum(count)
+  )
 ###########################################
-# 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
-table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
-df_pre <- as.data.frame.matrix(table) 
-df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
-df_pre <- df_pre %>% filter(Variable == "Worked at home")
-#_________________________________________#
-table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
-df_post <- data.frame(rbind(table))
-df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
-df_post <- df_post %>% filter(Variable == "Worked at home")
-#_________________________________________#
-df_remoteOCC <- df_pre %>% 
-  left_join(df_post, by = c("Variable"))
-#_________________________________________#
-df_remoteOCC <- df_remoteOCC %>% 
-  gather(Job_type, count, df_remoteOCC:Military..rank.not.specified)
+#visualizing changes in remote work props
+df_remote %>% 
+  mutate(Year = recode(Year,
+                       "2018" = 2018,
+                       "2019" = 2019,
+                       "X2020" = 2020,
+                       "X2021" = 2021)) %>% 
+  ggplot(aes(Year, remote_prop)) + geom_point() + geom_line()
 ```
 
+#### 3. What are the top jobs among new residents who work remotely?
+
+``` {r remotejobs, include = FALSE}
+###########################################
+# 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
+# table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
+# df_pre <- as.data.frame.matrix(table) 
+# df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
+# df_pre <- df_pre %>% filter(Variable == "Worked at home")
+# #_________________________________________#
+# table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
+# df_post <- data.frame(rbind(table))
+# df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
+# df_post <- df_post %>% filter(Variable == "Worked at home")
+# #_________________________________________#
+# df_remoteOCC <- df_pre %>% 
+#   left_join(df_post, by = c("Variable"))
+# #_________________________________________#
+# df_remoteOCC <- df_remoteOCC %>% 
+#   gather(Job_type, count, df_remoteOCC:Military..rank.not.specified)
+```
 

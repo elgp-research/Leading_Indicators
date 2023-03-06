@@ -1,11 +1,17 @@
 New Residents Patterns in Philadelphia: Part 3
 ================
 
-## GitHub Documents
+## Data Sources
 
-This is an R Markdown format used for publishing markdown documents to
-GitHub. When you click the **Knit** button all R code chunks are run and
-a markdown file (.md) suitable for publishing to GitHub is generated.
+For this Leading Indicator, we collected data from the IPUMS USA micro
+data series. We created a data extract from the [IPUMS
+website](https://usa.ipums.org/usa/) for the following variables:
+
+- Sex
+- Age
+- Race
+- Hispanic
+- Education
 
 ## Installing Libraries
 

@@ -559,20 +559,19 @@ df_remote %>%
 ``` {r remotejobs, include = FALSE}
 ###########################################
 # 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
-# table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
-# df_pre <- as.data.frame.matrix(table) 
-# df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
-# df_pre <- df_pre %>% filter(Variable == "Worked at home")
-# #_________________________________________#
-# table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
-# df_post <- data.frame(rbind(table))
-# df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
-# df_post <- df_post %>% filter(Variable == "Worked at home")
-# #_________________________________________#
-# df_remoteOCC <- df_pre %>% 
-#   left_join(df_post, by = c("Variable"))
-# #_________________________________________#
-# df_remoteOCC <- df_remoteOCC %>% 
-#   gather(Job_type, count, df_remoteOCC:Military..rank.not.specified)
+table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
+df_pre <- as.data.frame(table)
+df_pre <- df_pre %>% rename(FREQ_preCOVID = Freq)
+#_________________________________________#
+table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
+df_post <- as.data.frame(table)
+df_post <- df_post %>% rename(FREQ_postCOVID = Freq)
+#_________________________________________#
+df_remoteOCC <- df_pre %>% 
+  left_join(df_post, by = c("TRANWORK", "OCC")) %>% 
+  filter(TRANWORK == "80")
+#_________________________________________#
+# df_remoteOCC <- df_remoteOCC %>%
+#   gather(Job_type, count, `Chief executives and legislators`:Military..rank.not.specified)
 ```
 

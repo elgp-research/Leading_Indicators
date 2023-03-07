@@ -236,3 +236,31 @@ df_remote %>%
 ![](Data_Analysis_files/figure-gfm/remotework-1.png)<!-- -->
 
 #### 3. What are the top jobs among new residents who work remotely?
+
+``` r
+###########################################
+# 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
+table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
+df_pre <- as.data.frame(table)
+df_pre <- df_pre %>% rename(FREQ_preCOVID = Freq)
+#_________________________________________#
+table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
+df_post <- as.data.frame(table)
+df_post <- df_post %>% rename(FREQ_postCOVID = Freq)
+#_________________________________________#
+df_remoteOCC <- df_pre %>% 
+  left_join(df_post, by = c("TRANWORK", "OCC")) %>% 
+  filter(TRANWORK == "80")
+#_________________________________________#
+# calculating proportions of remote work occupations 
+df_remoteOCC <- df_remoteOCC %>% 
+  mutate(prop_preCOVID = FREQ_preCOVID/sum(FREQ_preCOVID),
+         prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
+         )
+# reshaping data to long to create top 10 occupations among remote workers
+df_remoteOCC_long <- df_remoteOCC %>% 
+  gather(state, proportion, prop_preCOVID:prop_postCOVID) %>% 
+  group_by(state) %>%
+  arrange(desc(proportion)) %>% 
+  slice(1:10)
+```

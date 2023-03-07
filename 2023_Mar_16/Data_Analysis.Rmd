@@ -89,6 +89,7 @@ dat <- dat %>%
                       `310` = "Food service managers",
                       `335` = "Entertainment and recreation managers",
                       `350` = "Medical and health services managers",
+                      `360` = "Natural sciences managers",
                       `410` = "Property, real estate, and community association managers",
                       `420` = "Social and community service managers",
                       `425` = "Emergency management directors",
@@ -556,7 +557,7 @@ df_remote %>%
 
 #### 3. What are the top jobs among new residents who work remotely?
 
-``` {r remotejobs, include = FALSE}
+``` {r remotejobs, include = TRUE}
 ###########################################
 # 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
 table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
@@ -571,7 +572,16 @@ df_remoteOCC <- df_pre %>%
   left_join(df_post, by = c("TRANWORK", "OCC")) %>% 
   filter(TRANWORK == "80")
 #_________________________________________#
-# df_remoteOCC <- df_remoteOCC %>%
-#   gather(Job_type, count, `Chief executives and legislators`:Military..rank.not.specified)
+# calculating proportions of remote work occupations 
+df_remoteOCC <- df_remoteOCC %>% 
+  mutate(prop_preCOVID = FREQ_preCOVID/sum(FREQ_preCOVID),
+         prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
+         )
+# reshaping data to long to create top 10 occupations among remote workers
+df_remoteOCC_long <- df_remoteOCC %>% 
+  gather(state, proportion, prop_preCOVID:prop_postCOVID) %>% 
+  group_by(state) %>%
+  arrange(desc(proportion)) %>% 
+  slice(1:10)
 ```
 

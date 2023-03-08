@@ -3,12 +3,9 @@ title: "New Residents Patterns in Philadelphia: Part 3"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## Data Sources
 
+I am testing out the new changes to the github organization name
 For this Leading Indicator, we collected data from the IPUMS USA micro data series. We created a data extract from the [IPUMS website](https://usa.ipums.org/usa/) for the following respondent-level characteristics: 
 
 * SEX 
@@ -29,6 +26,7 @@ For this Leading Indicator, we collected data from the IPUMS USA micro data seri
 library(tidyverse)
 library(ipumsr)
 library(shiny)
+library(patchwork)
 library(htmltools)
 library(DT)
 library(ggtext)
@@ -41,6 +39,10 @@ library(survey)
 
 ```{r data, include=TRUE}
 dat <- read.csv("ipums_nresidents.csv")
+```
+
+```{r savingData, include=FALSE}
+write_csv(dat, "/Users/elgp/Documents/ELGP_Github/Visuals/2023_Mar_16/ipums_nresidents.csv")
 ```
 
 ## Cleaning Data
@@ -349,70 +351,6 @@ df_occ <- df_occ %>%
   mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", Variable))
 ```
 
-## Ranking of Top 5 Occupations Among New Residents
-
-```{r visual_top5, echo=FALSE}
-# making visual of rankings
-df_occtemp_18 <- df_occ %>% 
-  filter(YEAR == "2018") 
-df_occtemp_19 <- df_occ %>% 
-  filter(YEAR == "2019") 
-df_occtemp_20 <- df_occ %>% 
-  filter(YEAR == "X2020") 
-df_occtemp_21 <- df_occ %>% 
-  filter(YEAR == "X2021") 
-#_________________________________________#
-my_theme <- theme_minimal() + 
-        theme(axis.title = element_blank(),
-        #panel.grid.major.x = element_blank(),
-        #panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        legend.justification = c(0, 1),
-        legend.background = element_blank(),
-        legend.direction="vertical",
-        legend.text = element_text(),
-        text = element_text(),
-        plot.title = element_markdown(size = 15, margin = margin(b = 10, t = 5), color = "darkslategrey"),
-        plot.subtitle = element_markdown(size = 10, color = "grey40", margin = margin(b = 10)),
-        plot.caption = element_text(size = 8, margin = margin(t = 10), color = "grey50", hjust = 0),
-        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10), color = "darkslategrey", ),
-        axis.title.x = element_text(margin = margin(t = 20, r = 10, b = 0, l = 10), color = "darkslategrey", ),
-        axis.ticks.x = element_blank(),
-        plot.margin = margin(0.2,0.2,0.2,0.2, "cm"))
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# plot
-gr1 <-  ggplot(df_occtemp_18, aes(x=reorder(Variable, prop_count), y=prop_count)) +
-  geom_segment(aes(x=reorder(Variable, prop_count), xend=reorder(Variable, prop_count), y=0, yend=prop_count), color = "orange") + coord_flip() +
-  scale_y_continuous(labels = scales::percent, limits = c(0,0.08)) +
-  scale_x_discrete(labels = function(Variable) str_wrap(Variable, width = 10)) +
-  labs(title = "2018", x="", y="") +
-  geom_point( size=5, color="blue", alpha=0.7) + my_theme
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-gr2 <-  ggplot(df_occtemp_19, aes(x=reorder(Variable, prop_count), y=prop_count)) +
-  geom_segment(aes(x=reorder(Variable, prop_count), xend=reorder(Variable, prop_count), y=0, yend=prop_count), color = "orange") + coord_flip() +
-  scale_y_continuous(labels = scales::percent, limits = c(0,0.08)) +
-  scale_x_discrete(labels = function(Variable) str_wrap(Variable, width = 10)) +
-  labs(title = "2019", x="", y="") +
-  geom_point( size=5, color="blue", alpha=0.7) + my_theme
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-gr3 <-  ggplot(df_occtemp_20, aes(x=reorder(Variable, prop_count), y=prop_count)) +
-  geom_segment(aes(x=reorder(Variable, prop_count), xend=reorder(Variable, prop_count), y=0, yend=prop_count), color = "orange") + coord_flip() +
-  scale_y_continuous(labels = scales::percent, limits = c(0,0.08)) +
-  scale_x_discrete(labels = function(Variable) str_wrap(Variable, width = 10)) +
-  labs(title = "2020", x="", y="Proportion of New Residents") +
-  geom_point( size=5, color="blue", alpha=0.7) + my_theme
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-gr4 <-  ggplot(df_occtemp_21, aes(x=reorder(Variable, prop_count), y=prop_count)) +
-  geom_segment(aes(x=reorder(Variable, prop_count), xend=reorder(Variable, prop_count), y=0, yend=prop_count), color = "orange") + coord_flip() +
-  scale_y_continuous(labels = scales::percent, limits = c(0,0.08)) +
-  scale_x_discrete(labels = function(Variable) str_wrap(Variable, width = 10)) +
-  labs(title = "2021", x="", y="Proportion of New Residents") +
-  geom_point( size=5, color="blue", alpha=0.7) + my_theme
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-ggarrange(gr1, gr2, gr3, gr4)
-```
-
 ### 2. Are New Residents Mostly Working in Philadelphia?
 
 ``` {r workplace, include = TRUE}
@@ -461,38 +399,6 @@ df_pwork <- df_pwork %>%
 df_pwork <- df_pwork %>% 
   mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Outside Philadelphia",
                         ifelse(Philly == "Philadelphia" & Year == 2018, "Inside Philadelphia", NA)))
-# making visual change of migrants working outside vs. inside philly 
-df_pwork %>% 
-  ggplot(aes(x=as.factor(Year), y = prop_pwork, color = Philly, group = Philly)) + 
-  geom_point() + geom_line() +
-  scale_y_continuous(labels = scales::percent) + 
-  labs(y="Proportion of new residents", x = "",
-       title = "Are New Residents Working in Philadelphia?", 
-       subtitle = "This graph shows the proportion of new residents whose primary work place is in Philadelphia \ncompared to ones who work outside Philadelphia while still living in Philadelphia.") + 
-  scale_color_manual(values = c("orange", "grey40")) + 
-  geom_label_repel(aes(label = label),
-                   nudge_x = 0.1,
-                   nudge_y = 0., 
-                   na.rm = TRUE) +
-  theme_minimal() + 
-  theme(axis.title = element_blank(),
-        #panel.grid.major.x = element_blank(),
-        #panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        legend.justification = c(0, 1),
-        legend.background = element_blank(),
-        legend.direction="vertical",
-        legend.position = "none",
-        legend.text = element_text(family = "Georgia"),
-        text = element_text(family = "Georgia"),
-        plot.title = element_text(size = 15, margin = margin(b = 10, t = 5), color = "darkslategrey"),
-        plot.subtitle = element_text(size = 10, color = "grey40", margin = margin(b = 10)),
-        plot.caption = element_text(size = 8, margin = margin(t = 10), color = "grey50", hjust = 0),
-        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.title.x = element_text(margin = margin(t = 20, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.ticks.x = element_blank(),
-        plot.margin = margin(0.2,0.2,0.2,0.2, "cm"))
 #:::::::::::::::::::#
 #       2018
 #:::::::::::::::::::#
@@ -544,18 +450,9 @@ df_remote <- df_remote %>%
   group_by(Year) %>% 
   mutate(remote_prop = count[which(Variable == "80")]/sum(count)
   )
-###########################################
-#visualizing changes in remote work props
-df_remote %>% 
-  mutate(Year = recode(Year,
-                       "2018" = 2018,
-                       "2019" = 2019,
-                       "X2020" = 2020,
-                       "X2021" = 2021)) %>% 
-  ggplot(aes(Year, remote_prop)) + geom_point() + geom_line()
 ```
 
-#### 3. What are the top jobs among new residents who work remotely?
+#### 4. What are the top jobs among new residents who work remotely?
 
 ``` {r remotejobs, include = TRUE}
 ###########################################

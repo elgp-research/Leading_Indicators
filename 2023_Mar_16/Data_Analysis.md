@@ -3,9 +3,8 @@ New Residents Patterns in Philadelphia: Part 3
 
 ## Data Sources
 
-I am testing out the new changes to the github organization name For
-this Leading Indicator, we collected data from the IPUMS USA micro data
-series. We created a data extract from the [IPUMS
+For this Leading Indicator, we collected data from the IPUMS USA micro
+data series. We created a data extract from the [IPUMS
 website](https://usa.ipums.org/usa/) for the following respondent-level
 characteristics:
 

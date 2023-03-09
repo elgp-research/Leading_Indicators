@@ -347,8 +347,9 @@ df_occ <- df_occ %>%
   arrange(desc(count)) %>%
   group_by(YEAR) %>% 
   mutate(prop_count = count/sum(count)) %>% 
-  slice(1:5) %>% 
-  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", Variable))
+  slice(1:10) %>% 
+  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", 
+                           ifelse(Variable == "Lawyers, and judges, magistrates, and other judicial workers", "Lawyers, judges and judicial workers", Variable)))
 ```
 
 ### 2. Are New Residents Mostly Working in Philadelphia?
@@ -397,8 +398,8 @@ df_pwork <- df_pwork %>%
   mutate(index_prop = prop_pwork/prop_pwork[which(Year == 2018)])
 # adding labels to maximum year in dataset 
 df_pwork <- df_pwork %>% 
-  mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Outside Philadelphia",
-                        ifelse(Philly == "Philadelphia" & Year == 2018, "Inside Philadelphia", NA)))
+  mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Working Outside Philadelphia",
+                        ifelse(Philly == "Philadelphia" & Year == 2018, "Working Inside Philadelphia", NA)))
 #:::::::::::::::::::#
 #       2018
 #:::::::::::::::::::#
@@ -448,37 +449,33 @@ df_remote <- df_pre %>%
 df_remote <- df_remote %>% 
   gather(Year, count, `2018`:X2021) %>% 
   group_by(Year) %>% 
-  mutate(remote_prop = count[which(Variable == "80")]/sum(count)
+  mutate(remote_prop = count[which(Variable == "80")]/sum(count) # remote work code = 80
   )
 ```
 
 #### 4. What are the top jobs among new residents who work remotely?
 
 ``` {r remotejobs, include = TRUE}
-###########################################
 # 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
-table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
-df_pre <- as.data.frame(table)
-df_pre <- df_pre %>% rename(FREQ_preCOVID = Freq)
 #_________________________________________#
 table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
 df_post <- as.data.frame(table)
 df_post <- df_post %>% rename(FREQ_postCOVID = Freq)
 #_________________________________________#
-df_remoteOCC <- df_pre %>% 
-  left_join(df_post, by = c("TRANWORK", "OCC")) %>% 
-  filter(TRANWORK == "80")
+df_remoteOCC <- df_post %>% 
+  filter(TRANWORK == "80") # filtering for remote work only
+#_________________________________________#
+df_remoteOCC <- df_remoteOCC %>%
+  mutate(OCC = as.character(OCC)) %>% 
+  mutate(OCC = ifelse(OCC == "Other community and social service specialists", "Other social sercvice specialists",
+                      ifelse(OCC == "Real estate brokers and sales agents", "Real estate brokers",
+                             ifelse(OCC == "Transportation, storage, and distribution managers", "Transportation managers", OCC))))
 #_________________________________________#
 # calculating proportions of remote work occupations 
 df_remoteOCC <- df_remoteOCC %>% 
-  mutate(prop_preCOVID = FREQ_preCOVID/sum(FREQ_preCOVID),
-         prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
-         )
-# reshaping data to long to create top 10 occupations among remote workers
-df_remoteOCC_long <- df_remoteOCC %>% 
-  gather(state, proportion, prop_preCOVID:prop_postCOVID) %>% 
-  group_by(state) %>%
-  arrange(desc(proportion)) %>% 
+  mutate(prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
+         ) %>% 
+  arrange(desc(prop_postCOVID)) %>% # choosing top 10 remote work occupations by proportion
   slice(1:10)
 ```
 

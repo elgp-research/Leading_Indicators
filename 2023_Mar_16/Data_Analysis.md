@@ -3,8 +3,9 @@ New Residents Patterns in Philadelphia: Part 3
 
 ## Data Sources
 
-For this Leading Indicator, we collected data from the IPUMS USA micro
-data series. We created a data extract from the [IPUMS
+I am testing out the new changes to the github organization name For
+this Leading Indicator, we collected data from the IPUMS USA micro data
+series. We created a data extract from the [IPUMS
 website](https://usa.ipums.org/usa/) for the following respondent-level
 characteristics:
 
@@ -78,13 +79,10 @@ df_occ <- df_occ %>%
   arrange(desc(count)) %>%
   group_by(YEAR) %>% 
   mutate(prop_count = count/sum(count)) %>% 
-  slice(1:5) %>% 
-  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", Variable))
+  slice(1:10) %>% 
+  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", 
+                           ifelse(Variable == "Lawyers, and judges, magistrates, and other judicial workers", "Lawyers, judges and judicial workers", Variable)))
 ```
-
-## Ranking of Top 5 Occupations Among New Residents
-
-![](Data_Analysis_files/figure-gfm/visual_top5-1.png)<!-- -->
 
 ### 2. Are New Residents Mostly Working in Philadelphia?
 
@@ -132,45 +130,8 @@ df_pwork <- df_pwork %>%
   mutate(index_prop = prop_pwork/prop_pwork[which(Year == 2018)])
 # adding labels to maximum year in dataset 
 df_pwork <- df_pwork %>% 
-  mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Outside Philadelphia",
-                        ifelse(Philly == "Philadelphia" & Year == 2018, "Inside Philadelphia", NA)))
-# making visual change of migrants working outside vs. inside philly 
-df_pwork %>% 
-  ggplot(aes(x=as.factor(Year), y = prop_pwork, color = Philly, group = Philly)) + 
-  geom_point() + geom_line() +
-  scale_y_continuous(labels = scales::percent) + 
-  labs(y="Proportion of new residents", x = "",
-       title = "Are New Residents Working in Philadelphia?", 
-       subtitle = "This graph shows the proportion of new residents whose primary work place is in Philadelphia \ncompared to ones who work outside Philadelphia while still living in Philadelphia.") + 
-  scale_color_manual(values = c("orange", "grey40")) + 
-  geom_label_repel(aes(label = label),
-                   nudge_x = 0.1,
-                   nudge_y = 0., 
-                   na.rm = TRUE) +
-  theme_minimal() + 
-  theme(axis.title = element_blank(),
-        #panel.grid.major.x = element_blank(),
-        #panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        legend.justification = c(0, 1),
-        legend.background = element_blank(),
-        legend.direction="vertical",
-        legend.position = "none",
-        legend.text = element_text(family = "Georgia"),
-        text = element_text(family = "Georgia"),
-        plot.title = element_text(size = 15, margin = margin(b = 10, t = 5), color = "darkslategrey"),
-        plot.subtitle = element_text(size = 10, color = "grey40", margin = margin(b = 10)),
-        plot.caption = element_text(size = 8, margin = margin(t = 10), color = "grey50", hjust = 0),
-        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.title.x = element_text(margin = margin(t = 20, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.ticks.x = element_blank(),
-        plot.margin = margin(0.2,0.2,0.2,0.2, "cm"))
-```
-
-![](Data_Analysis_files/figure-gfm/workplace-1.png)<!-- -->
-
-``` r
+  mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Working Outside Philadelphia",
+                        ifelse(Philly == "Philadelphia" & Year == 2018, "Working Inside Philadelphia", NA)))
 #:::::::::::::::::::#
 #       2018
 #:::::::::::::::::::#
@@ -220,47 +181,32 @@ df_remote <- df_pre %>%
 df_remote <- df_remote %>% 
   gather(Year, count, `2018`:X2021) %>% 
   group_by(Year) %>% 
-  mutate(remote_prop = count[which(Variable == "80")]/sum(count)
+  mutate(remote_prop = count[which(Variable == "80")]/sum(count) # remote work code = 80
   )
-###########################################
-#visualizing changes in remote work props
-df_remote %>% 
-  mutate(Year = recode(Year,
-                       "2018" = 2018,
-                       "2019" = 2019,
-                       "X2020" = 2020,
-                       "X2021" = 2021)) %>% 
-  ggplot(aes(Year, remote_prop)) + geom_point() + geom_line()
 ```
 
-![](Data_Analysis_files/figure-gfm/remotework-1.png)<!-- -->
-
-#### 3. What are the top jobs among new residents who work remotely?
+#### 4. What are the top jobs among new residents who work remotely?
 
 ``` r
-###########################################
 # 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
-table <- svytable(~TRANWORK+OCC, design = dtaDesign_pre)
-df_pre <- as.data.frame(table)
-df_pre <- df_pre %>% rename(FREQ_preCOVID = Freq)
 #_________________________________________#
 table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
 df_post <- as.data.frame(table)
 df_post <- df_post %>% rename(FREQ_postCOVID = Freq)
 #_________________________________________#
-df_remoteOCC <- df_pre %>% 
-  left_join(df_post, by = c("TRANWORK", "OCC")) %>% 
-  filter(TRANWORK == "80")
+df_remoteOCC <- df_post %>% 
+  filter(TRANWORK == "80") # filtering for remote work only
+#_________________________________________#
+df_remoteOCC <- df_remoteOCC %>%
+  mutate(OCC = as.character(OCC)) %>% 
+  mutate(OCC = ifelse(OCC == "Other community and social service specialists", "Other social sercvice specialists",
+                      ifelse(OCC == "Real estate brokers and sales agents", "Real estate brokers",
+                             ifelse(OCC == "Transportation, storage, and distribution managers", "Transportation managers", OCC))))
 #_________________________________________#
 # calculating proportions of remote work occupations 
 df_remoteOCC <- df_remoteOCC %>% 
-  mutate(prop_preCOVID = FREQ_preCOVID/sum(FREQ_preCOVID),
-         prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
-         )
-# reshaping data to long to create top 10 occupations among remote workers
-df_remoteOCC_long <- df_remoteOCC %>% 
-  gather(state, proportion, prop_preCOVID:prop_postCOVID) %>% 
-  group_by(state) %>%
-  arrange(desc(proportion)) %>% 
+  mutate(prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
+         ) %>% 
+  arrange(desc(prop_postCOVID)) %>% # choosing top 10 remote work occupations by proportion
   slice(1:10)
 ```

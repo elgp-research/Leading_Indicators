@@ -5,7 +5,6 @@ output: github_document
 
 ## Data Sources
 
-I am testing out the new changes to the github organization name
 For this Leading Indicator, we collected data from the IPUMS USA micro data series. We created a data extract from the [IPUMS website](https://usa.ipums.org/usa/) for the following respondent-level characteristics: 
 
 * SEX 

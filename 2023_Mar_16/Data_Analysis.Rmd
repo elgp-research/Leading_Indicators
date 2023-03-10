@@ -462,7 +462,7 @@ df_remote <- df_remote %>%
   )
 ```
 
-#### 4. What are the top jobs among new residents who work remotely?
+### 4. What are the top jobs among new residents who work remotely?
 
 ``` {r remotejobs, include = TRUE}
 # 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?

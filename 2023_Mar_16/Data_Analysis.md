@@ -8,19 +8,23 @@ data series. We created a data extract from the [IPUMS
 website](https://usa.ipums.org/usa/) for the following respondent-level
 characteristics:
 
-- SEX
-- AGE
-- RACE
-- HISPAN (Hispanic origin)
-- EDUC (Educational attainment)
-- INCT (Total personal income)
-- MIGPLAC1 (State or county of residence 1 year ago)
-- MIGCOUNTY1 (County of residence 1 year ago)
-- MIGTYPE1 (Metropolitan status 1 year ago)
-- PWSTATE2 (Place of work: state)
-- PWCOUNTY (Place of work: county)
-- OCC (Occupation)
-- TRANWORK (Means of transportation to work)
+| Variable   | Description                                                                                                                                                                                                                                                                                                                                           |
+|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| STATEFIP   | STATEFIP reports the state in which the household was located, using the Federal Information Processing Standards (FIPS) coding scheme, which orders the states alphabetically.                                                                                                                                                                       |
+| COUNTYFIP  | COUNTYFIP identifies the county where the household was enumerated, using the Federal Information Processing Standard (FIPS) coding scheme. COUNTYFIP codes are state-dependent; they must be combined with state codes (see STATEFIP or STATEICP) to distinguish counties located in different states.                                               |
+| SEX        | SEX reports whether the person was male or female.                                                                                                                                                                                                                                                                                                    |
+| AGE        | AGE reports the person’s age in years as of the last birthday.                                                                                                                                                                                                                                                                                        |
+| RACE       | The concept of RACE has changed over the more than 150 years represented in IPUMS. Currently, the Census Bureau and others consider race to be a sociopolitical construct, not a scientific or anthropological one. Many detailed RACE categories consist of national origin groups.                                                                  |
+| HISPAN     | HISPAN identifies persons of Hispanic/Spanish/Latino origin and classifies them according to their country of origin when possible. Origin is defined by the Census Bureau as ancestry, lineage, heritage, nationality group, or country of birth. People of Hispanic origin may be of any race; see RACE for a discussion of coding issues involved. |
+| EDUC       | EDUC indicates respondents’ educational attainment, as measured by the highest year of school or degree completed.                                                                                                                                                                                                                                    |
+| INCTOT     | INCTOT reports each respondent’s total pre-tax personal income or losses from all sources for the previous year. The censuses collected information on income received from these sources during the previous calendar year; for the ACS and the PRCS, the reference period was the past 12 months.                                                   |
+| MIGPLACE1  | For respondents who lived in a different residence 1 year before the survey date, MIGPLAC1 identifies the U.S. state, outlying territory, or the foreign country where the respondent lived at that time.                                                                                                                                             |
+| MIGCOUNTY1 | For respondents who lived in a different residence 1 year before the survey date, MIGCOUNTY1 identifies the county (or county equivalent) where the respondent lived at that time, if the prior residence was in an identifiable county.                                                                                                              |
+| MIGTYPE1   | MIGTYPE1 indicates whether the respondent lived in a metropolitan area one year ago and, if so, whether they also resided within a central/principal city.                                                                                                                                                                                            |
+| PWSTATE2   | PWSTATE2 reports the state in which the respondent’s primary workplace was located.                                                                                                                                                                                                                                                                   |
+| PWCOUNTY   | PWCOUNTY identifies the county (or county equivalent) where the respondent worked, if the respondent’s workplace was in an identifiable county.                                                                                                                                                                                                       |
+| OCC        | OCC reports the person’s primary occupation, coded into a contemporary census classification scheme (some non-occupational activities are also recorded in the pre-1940 samples). Generally, the primary occupation is the one from which the person earns the most money.                                                                            |
+| TRANWORK   | TRANWORK reports the respondent’s primary means of transportation to work on the most recent day worked (1970), or over the course of the previous week (the 1960 and 1980-2000 censuses, the ACS, and the PRCS).                                                                                                                                     |
 
 ## Importing Data
 

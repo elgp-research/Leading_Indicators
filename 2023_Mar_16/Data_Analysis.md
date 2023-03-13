@@ -109,8 +109,8 @@ df_occ <- df_occ %>%
   arrange(desc(count)) %>%
   group_by(YEAR) %>% 
   mutate(prop_count = count/sum(count)) %>% 
-  slice(1:10) %>% 
-  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Secretaries and administerative assistants", 
+  slice(1:5) %>% 
+  mutate(Variable = ifelse(Variable == "Secretaries and administrative assistants, except legal, medical, and executive", "Administerative assistants", 
                            ifelse(Variable == "Lawyers, and judges, magistrates, and other judicial workers", "Lawyers, judges and judicial workers", Variable)))
 ```
 

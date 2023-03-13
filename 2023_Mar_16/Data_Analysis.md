@@ -29,12 +29,15 @@ characteristics:
 ## Importing Data
 
 ``` r
-dat <- read.csv("ipums_nresidents.csv")
+dat_newresidents <- read.csv("ipums_nresidents.csv")
+dat_allresidents <- read.csv("ipums_allresidents.csv")
 ```
 
 ## Cleaning Data
 
 ### Attaching survey weights
+
+#### Survey weights on dataset with only new residents in Philadelphia
 
 ``` r
 #_________________________________________#
@@ -56,6 +59,30 @@ dtaDesign_post <- svydesign(id     = ~CLUSTER,
                            weights = ~PERWT,
                            nest    = TRUE,
                            data    = post_COVID)
+```
+
+#### Survey weights on dataset with all residents in Philadelphia
+
+``` r
+#_________________________________________#
+# separating data into pre and post pandemic 
+pre_COVID <- dat_allresidents %>% 
+  filter(YEAR == 2018 | YEAR == 2019)
+post_COVID <- dat_allresidents %>% 
+  filter(YEAR == 2020 | YEAR == 2021)
+#_________________________________________#
+# attaching survey weights 
+dtaDesign_pre_all <- svydesign(id      = ~CLUSTER,
+                               strata  = ~STRATA,
+                               weights = ~PERWT,
+                               nest    = TRUE,
+                               data    = pre_COVID)
+#_________________________________________#
+dtaDesign_post_all <- svydesign(id     = ~CLUSTER,
+                                strata  = ~STRATA,
+                                weights = ~PERWT,
+                                nest    = TRUE,
+                                data    = post_COVID)
 ```
 
 ## Cross Tabulations
@@ -89,52 +116,86 @@ df_occ <- df_occ %>%
 
 ### 2. Are New Residents Mostly Working in Philadelphia?
 
+#### 2.1 Cross-tabulation of new residents only
+
 ``` r
-###########################################
 # 6. Place of work => can point out whether numbers of migrants working outside PA 
 # has increased since the pandemic or not
 # separating data into pre and post pandemic 
 #:::::::::::::::::::::::::::::::::::::::::
-table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_pre)
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_pre) # creating table with IPUMS survey weights 
 df_pre <- as.data.frame.matrix(table) 
 df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
 df_pre <- df_pre %>% 
   group_by(Variable) %>% 
   mutate(`Pre-COVID` = mean(`2018`:`2019`))
 #_________________________________________#
-table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_post)
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_post) # creating table with IPUMS survey weights 
 df_post <- data.frame(rbind(table))
 df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble() 
 df_post <- df_post %>% 
   group_by(Variable) %>% 
   mutate(`Post-COVID` = mean(X2020:X2021))
 #_________________________________________#
-df_pwork <- df_pre %>% 
+df_pwork <- df_pre %>% # merging datasets togther
   left_join(df_post, by = c("Variable"))
 #_________________________________________#
-# creating dummy of philly 
 df_pwork <- df_pwork %>% 
-  select(Variable, `2018`, `2019`, X2020, X2021) %>% 
+  mutate(resident_type = "New Residents")
+```
+
+#### 2.2 Cross-tabulation of all residents
+
+``` r
+# 6. Place of work => can point out whether numbers of migrants working outside PA 
+# has increased since the pandemic or not
+# separating data into pre and post pandemic 
+#:::::::::::::::::::::::::::::::::::::::::
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_pre_all) # creating table with IPUMS survey weights 
+df_pre <- as.data.frame.matrix(table) 
+df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
+df_pre <- df_pre %>% 
+  group_by(Variable) %>% 
+  mutate(`Pre-COVID` = mean(`2018`:`2019`))
+#_________________________________________#
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_post_all) # creating table with IPUMS survey weights 
+df_post <- data.frame(rbind(table))
+df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble() 
+df_post <- df_post %>% 
+  group_by(Variable) %>% 
+  mutate(`Post-COVID` = mean(X2020:X2021))
+#_________________________________________#
+df_pwork_all <- df_pre %>% # merging datasets together
+  left_join(df_post, by = c("Variable"))
+#_________________________________________#
+df_pwork_all <- df_pwork_all %>% 
+  mutate(resident_type = "All Residents")
+```
+
+#### 2.3 Combining datasets for all residents and only new residents in Philadelphia
+
+``` r
+# combining datasets of new residents and all residents
+df <- rbind(df_pwork_all, df_pwork)
+# creating dummy of philly 
+df <- df %>% 
+  select(Variable, `2018`, `2019`, X2020, X2021, resident_type) %>% 
   gather(Year, count, `2018`:X2021) %>% 
   mutate(Philly = ifelse(Variable == 101, "Philadelphia", "Not Philadelphia")) %>% 
-  group_by(Year, Philly) %>% 
+  group_by(Year, resident_type, Philly) %>% 
   mutate(sum_pwork = sum(count)) %>%
-  group_by(Year) %>% 
+  group_by(Year, resident_type) %>% 
   mutate(prop_pwork = sum_pwork/sum(count))
+#_____________________________________________#
 # creating lineplots of changing proportions in migrant workers working in philadelphia vs outside
-df_pwork <- df_pwork %>% 
+df <- df %>% 
   mutate(Year = recode(Year,
                        "2018" = 2018,
                        "2019" = 2019,
                        "X2020" = 2020,
                        "X2021" = 2021)) %>% 
-  distinct(prop_pwork, .keep_all = TRUE) %>% 
-  group_by(Philly) %>% 
-  mutate(index_prop = prop_pwork/prop_pwork[which(Year == 2018)])
-# adding labels to maximum year in dataset 
-df_pwork <- df_pwork %>% 
-  mutate(label = ifelse(Philly == "Not Philadelphia" & Year == 2018, "Working Outside Philadelphia",
-                        ifelse(Philly == "Philadelphia" & Year == 2018, "Working Inside Philadelphia", NA)))
+  distinct(prop_pwork, .keep_all = TRUE) 
+#_____________________________________________#
 #:::::::::::::::::::#
 #       2018
 #:::::::::::::::::::#

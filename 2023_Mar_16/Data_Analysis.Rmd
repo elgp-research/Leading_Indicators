@@ -537,42 +537,7 @@ df <- df %>%
 
 ```
 
-### Historical Trend for Resident Proportions 
 
-```{r dumbell_plot, echo=FALSE}
-df %>% 
-  ggplot(aes(x=as.factor(Year), y=prop_pwork)) + 
-  geom_line(size = 0.4, color = "grey60") +
-  geom_point(aes(color = resident_type), size = 2) +
-  scale_y_continuous(labels = scales::percent, limits = c(0.5,1)) +
-  scale_color_manual(values = c("grey40", "orange")) + 
-  labs(x = "", y = "Proportion of Residents",
-       title = "Philadelphia's New Residents Have Mostly Lived and Worked Inside the City",
-       subtitle = "This graph compares the proportion of new residents who live and work within Philadelphia with \nthe proportion of total residents who live and work in the city.",
-       caption = "Source: Integrated Public Microdata Series (IPUMS) USA. \nAll numbers are estimates calculated from the IPUMS household survey.") +
-  theme_cleveland() + 
-  theme(text = element_text(family = "Georgia"),
-        axis.title = element_blank(),
-        #panel.grid.major.x = element_blank(),
-        #panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        legend.justification = c(0.5,0,5),
-        legend.background = element_blank(),
-        legend.direction="horizontal",
-        legend.position = "bottom",
-        legend.text = element_text(family = "Georgia", color = "darkslategrey"),
-        legend.margin=margin(-20, 0, 0, 0),
-        plot.title = element_text(size = 15, margin = margin(b = 10, t = 5), color = "darkslategrey"),
-        plot.subtitle = element_text(size = 10, color = "grey40", margin = margin(b = 20)),
-        plot.caption = element_text(size = 8, margin = margin(t = 5), color = "grey50", hjust = 0),
-        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.title.x = element_text(margin = margin(t = 20, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
-        axis.ticks.x = element_blank(),
-        plot.margin = margin(0.2,0.2,0.2,0.2, "cm"))
-
-
-```
 
 
 

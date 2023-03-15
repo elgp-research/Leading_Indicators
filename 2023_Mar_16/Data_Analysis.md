@@ -511,10 +511,3 @@ df <- df %>%
   distinct(prop_pwork, .keep_all = TRUE) %>% 
   filter(County == "Philadelphia")
 ```
-
-### Historical Trend for Resident Proportions
-
-    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-    ## ℹ Please use `linewidth` instead.
-
-![](Data_Analysis_files/figure-gfm/dumbell_plot-1.png)<!-- -->

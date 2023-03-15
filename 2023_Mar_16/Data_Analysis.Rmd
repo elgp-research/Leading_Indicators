@@ -58,7 +58,7 @@ write_csv(dat_allresidents, "/Users/elgp/Documents/ELGP_Github/Visuals/2023_Mar_
 
 ## Cleaning Data
 
-```{r analysis, include=FALSE}
+```{r analysis, include=TRUE}
 filenames <- list.files(pattern = ".csv",
                         full.names = TRUE)
 #___________________________________________________#
@@ -374,7 +374,6 @@ dtaDesign_post_all <- svydesign(id     = ~CLUSTER,
 ### 1. Top 5 Occupations 
 
 ```{r occupations_tab, include=TRUE}
-# 1. Occupation => describe the top 10 jobs held by migrant workers 
 table <- svytable(~OCC+YEAR, design = dtaDesign_pre)
 df_pre <- as.data.frame.matrix(table) 
 df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
@@ -403,10 +402,6 @@ df_occ <- df_occ %>%
 #### 2.1 Cross-tabulation of new residents only 
 
 ``` {r workplace, include = TRUE}
-# 6. Place of work => can point out whether numbers of migrants working outside PA 
-# has increased since the pandemic or not
-# separating data into pre and post pandemic 
-#:::::::::::::::::::::::::::::::::::::::::
 table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_pre) # creating table with IPUMS survey weights 
 df_pre <- as.data.frame.matrix(table) 
 df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
@@ -431,10 +426,6 @@ df_pwork <- df_pwork %>%
 #### 2.2 Cross-tabulation of all residents  
 
 ``` {r workplace_all, include = TRUE}
-# 6. Place of work => can point out whether numbers of migrants working outside PA 
-# has increased since the pandemic or not
-# separating data into pre and post pandemic 
-#:::::::::::::::::::::::::::::::::::::::::
 table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_pre_all) # creating table with IPUMS survey weights 
 df_pre <- as.data.frame.matrix(table) 
 df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble()
@@ -471,7 +462,7 @@ df <- df %>%
   group_by(Year, resident_type) %>% 
   mutate(prop_pwork = sum_pwork/sum(count))
 #_____________________________________________#
-# creating lineplots of changing proportions in migrant workers working in philadelphia vs outside
+# keeping distinct values of prop_pwork in dataset
 df <- df %>% 
   mutate(Year = recode(Year,
                        "2018" = 2018,
@@ -480,82 +471,113 @@ df <- df %>%
                        "X2021" = 2021)) %>% 
   distinct(prop_pwork, .keep_all = TRUE) 
 #_____________________________________________#
-#:::::::::::::::::::#
-#       2018
-#:::::::::::::::::::#
-# RECORDING PWCOUNTIES THAT CORRESPOND TO PWSTATES 
-# COUNTY FIPS CODE: 91 => Montgomery County, PA
-# COUNTY FIPS CODE: 7 => Camden County, NJ
-# COUNTY FIPS CODE: 29 => Chester County, PA
-# COUNTY FIPS CODE: 45 => Delaware County, PA
-# COUNTY FIPS CODE: 17 => Bucks County, PA
-#:::::::::::::::::::#
-#       2020
-#:::::::::::::::::::#
-# RECORDING PWCOUNTIES THAT CORRESPOND TO PWSTATES 
-# COUNTY FIPS CODE: 91 => Montgomery County, PA
-# COUNTY FIPS CODE: 3 => New Castle, DE
-# COUNTY FIPS CODE: 7 => Camden County, NJ
-# COUNTY FIPS CODE: 15 => Gloucester County, NJ
-# COUNTY FIPS CODE: 45 => Delaware County, PA
-#:::::::::::::::::::#
-#       2021
-#:::::::::::::::::::#
-# RECORDING PWCOUNTIES THAT CORRESPOND TO PWSTATES 
-# COUNTY FIPS CODE: 61 => New York County, PA
-# COUNTY FIPS CODE: 7 => Camden County, NJ
-# COUNTY FIPS CODE: 91 => Montgomery County, PA
-# COUNTY FIPS CODE: 17 => Bucks County, PA
+```
+
+### Robustness Checks 
+
+We used different datasets compared to the main analysis. This dataset includes estimates for previous years starting from 2005.
+
+```{r robust_checks, include=TRUE}
+
+# cleaning historical data files
+dat <- clean("./ipums_nresidents_historical.csv")
+dat_all <- clean("./ipums_allresidents_historical.csv")
+
+# attaching survey weights 
+dtaDesign_nresidents <- svydesign(id      = ~CLUSTER,
+                                  strata  = ~STRATA,
+                                  weights = ~PERWT,
+                                  nest    = TRUE,
+                                  data    = dat)
+#_________________________________________#
+dtaDesign_allresidents <- svydesign(id     = ~CLUSTER,
+                                    strata  = ~STRATA,
+                                    weights = ~PERWT,
+                                    nest    = TRUE,
+                                    data    = dat_all)
+
+
+## Cross Tabulations of all Residents Using Historical Data
 #:::::::::::::::::::::::::::::::::::::::::
-###########################################
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_nresidents) # creating table with IPUMS survey weights 
+df_nresidents <- as.data.frame.matrix(table) 
+df_nresidents <- rownames_to_column(df_nresidents, var = "Variable") %>% as_tibble()
+df_nresidents <- df_nresidents %>% 
+  mutate(resident_type = "New Residents")
+#_________________________________________#
+table <- svytable(~PWCOUNTY+YEAR, design = dtaDesign_allresidents) # creating table with IPUMS survey weights 
+df_allresidents <- data.frame(rbind(table))
+df_allresidents <- rownames_to_column(df_allresidents, var = "Variable") %>% as_tibble() 
+df_allresidents <- df_allresidents %>% 
+  mutate(resident_type = "All Residents")
+#_________________________________________#
+# changing year names in all residents dataset to match nresident dataset
+df_allresidents <- df_allresidents %>% 
+  rename(`2005` = X2005, `2006` = X2006, `2007` = X2007, `2008` = X2008, `2009` = X2009,
+         `2010` = X2010, `2011` = X2011, `2012` = X2012, `2013` = X2013,
+         `2014` = X2014, `2015` = X2015, `2016` = X2016, `2017` = X2017,
+         `2018` = X2018, `2019` = X2019, `2020` = X2020, `2021` = X2021
+         )
+
+#_________________________________________#
+
+df <- rbind(df_allresidents, df_nresidents)
+#_________________________________________#
+
+# creating dummy of philly 
+df <- df %>% 
+  gather(Year, count, `2005`:`2021`) %>% 
+  mutate(County = ifelse(Variable == 101, "Philadelphia", "Not Philadelphia")) %>% 
+  group_by(Year, resident_type, County) %>% 
+  mutate(sum_pwork = sum(count)) %>%
+  group_by(Year, resident_type) %>% 
+  mutate(prop_pwork = sum_pwork/sum(count)) %>% 
+  distinct(prop_pwork, .keep_all = TRUE) %>% 
+  filter(County == "Philadelphia")
+
 ```
 
-### 3. Is Remote Work Higher among New Residents After COVID-19
+### Historical Trend for Resident Proportions 
 
-```{r remotework, include = TRUE}
-# 7a. Remote work => is remote work higher in migrants who came to Philly after the pandemic
-table <- svytable(~TRANWORK+YEAR, design = dtaDesign_pre)
-df_pre <- as.data.frame.matrix(table) 
-df_pre <- rownames_to_column(df_pre, var = "Variable") %>% as_tibble() 
-#_________________________________________#
-table <- svytable(~TRANWORK+YEAR, design = dtaDesign_post)
-df_post <- data.frame(rbind(table))
-df_post <- rownames_to_column(df_post, var = "Variable") %>% as_tibble()
-#_________________________________________#
-df_remote <- df_pre %>% 
-  left_join(df_post, by = c("Variable"))
-#_________________________________________#
-# calculating proportion of remote work among new residents
-df_remote <- df_remote %>% 
-  gather(Year, count, `2018`:X2021) %>% 
-  group_by(Year) %>% 
-  mutate(remote_prop = count[which(Variable == "80")]/sum(count) # remote work code = 80
-  )
+```{r dumbell_plot, echo=FALSE}
+df %>% 
+  ggplot(aes(x=as.factor(Year), y=prop_pwork)) + 
+  geom_line(size = 0.4, color = "grey60") +
+  geom_point(aes(color = resident_type), size = 2) +
+  scale_y_continuous(labels = scales::percent, limits = c(0.5,1)) +
+  scale_color_manual(values = c("grey40", "orange")) + 
+  labs(x = "", y = "Proportion of Residents",
+       title = "Philadelphia's New Residents Have Mostly Lived and Worked Inside the City",
+       subtitle = "This graph compares the proportion of new residents who live and work within Philadelphia with \nthe proportion of total residents who live and work in the city.",
+       caption = "Source: Integrated Public Microdata Series (IPUMS) USA. \nAll numbers are estimates calculated from the IPUMS household survey.") +
+  theme_cleveland() + 
+  theme(text = element_text(family = "Georgia"),
+        axis.title = element_blank(),
+        #panel.grid.major.x = element_blank(),
+        #panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        legend.justification = c(0.5,0,5),
+        legend.background = element_blank(),
+        legend.direction="horizontal",
+        legend.position = "bottom",
+        legend.text = element_text(family = "Georgia", color = "darkslategrey"),
+        legend.margin=margin(-20, 0, 0, 0),
+        plot.title = element_text(size = 15, margin = margin(b = 10, t = 5), color = "darkslategrey"),
+        plot.subtitle = element_text(size = 10, color = "grey40", margin = margin(b = 20)),
+        plot.caption = element_text(size = 8, margin = margin(t = 5), color = "grey50", hjust = 0),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
+        axis.title.x = element_text(margin = margin(t = 20, r = 10, b = 0, l = 10), color = "darkslategrey", family = "Georgia"),
+        axis.ticks.x = element_blank(),
+        plot.margin = margin(0.2,0.2,0.2,0.2, "cm"))
+
+
 ```
 
-### 4. What are the top jobs among new residents who work remotely?
 
-``` {r remotejobs, include = TRUE}
-# 7b. Remote work jobs => what are the top 10 jobs that remote working migrants have?
-#_________________________________________#
-table <- svytable(~TRANWORK+OCC, design = dtaDesign_post)
-df_post <- as.data.frame(table)
-df_post <- df_post %>% rename(FREQ_postCOVID = Freq)
-#_________________________________________#
-df_remoteOCC <- df_post %>% 
-  filter(TRANWORK == "80") # filtering for remote work only
-#_________________________________________#
-df_remoteOCC <- df_remoteOCC %>%
-  mutate(OCC = as.character(OCC)) %>% 
-  mutate(OCC = ifelse(OCC == "Other community and social service specialists", "Other social sercvice specialists",
-                      ifelse(OCC == "Real estate brokers and sales agents", "Real estate brokers",
-                             ifelse(OCC == "Transportation, storage, and distribution managers", "Transportation managers", OCC))))
-#_________________________________________#
-# calculating proportions of remote work occupations 
-df_remoteOCC <- df_remoteOCC %>% 
-  mutate(prop_postCOVID = FREQ_postCOVID/sum(FREQ_postCOVID)
-         ) %>% 
-  arrange(desc(prop_postCOVID)) %>% # choosing top 10 remote work occupations by proportion
-  slice(1:10)
-```
+
+
+
+
+
 

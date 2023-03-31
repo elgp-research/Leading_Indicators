@@ -287,5 +287,32 @@ clean <- function(filename) {
 ## Applying Functions to Raw Datasets
 
 ``` r
+# apply clean function 
 dat <- clean("Data/ipums_nresidents_historical.csv")
+
+
+# attaching survey weights 
+dtaDesign_nresidents <- svydesign(id      = ~CLUSTER,
+                                  strata  = ~STRATA,
+                                  weights = ~PERWT,
+                                  nest    = TRUE,
+                                  data    = dat)
+```
+
+## Cross-Tabs Used for Analysis on Remote Work Among New Residents
+
+``` r
+# Remote work => is remote work higher in migrants who came to Philly after the pandemic
+
+table <- svytable(~TRANWORK+YEAR, design = dtaDesign_nresidents)
+data_remote <- as.data.frame.matrix(table) 
+data_remote <- rownames_to_column(data_remote, var = "Variable") %>% as_tibble() 
+#_________________________________________#
+
+# calculating proportion of remote work among new residents
+data_remote <- data_remote %>% 
+  gather(Year, count, `2005`:`2021`) %>% 
+  group_by(Year) %>% 
+  mutate(remote_prop = count[which(Variable == "80")]/sum(count) # remote work code = 80
+  )
 ```

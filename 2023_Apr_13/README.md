@@ -26,19 +26,12 @@ characteristics:
 | OCC        | OCC reports the person’s primary occupation, coded into a contemporary census classification scheme (some non-occupational activities are also recorded in the pre-1940 samples). Generally, the primary occupation is the one from which the person earns the most money.                                                                            |
 | TRANWORK   | TRANWORK reports the respondent’s primary means of transportation to work on the most recent day worked (1970), or over the course of the previous week (the 1960 and 1980-2000 censuses, the ACS, and the PRCS).                                                                                                                                     |
 
-## Importing Data
+## Creating Functions for Importing and Cleaning IPUMS Data
 
 ``` r
-# dat_newresidents <- read.csv("ipums_nresidents.csv")
-# dat_allresidents <- read.csv("ipums_allresidents.csv")
-```
+# storing files in a list
+filenames <- list.files(path = "Data", pattern = ".csv", full.names = TRUE)
 
-## Cleaning Data
-
-``` r
-filenames <- list.files(pattern = ".csv",
-                        full.names = TRUE)
-#___________________________________________________#
 # creating function for cleaning data 
 clean <- function(filename) {
   dat <- read.csv(file = filename)
@@ -289,8 +282,10 @@ clean <- function(filename) {
                       `9830` = "Military, rank not specified"
                       ))
 }
-#______________________________________________________________
-# applying clean function to IPUMS datasets
-#dat <- clean("./ipums_nresidents.csv")
-#dat_allresidents <- clean("./ipums_allresidents.csv")
+```
+
+## Applying Functions to Raw Datasets
+
+``` r
+dat <- clean("Data/ipums_nresidents_historical.csv")
 ```

@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # DS store files
 .DS_Store
+
+# R markdown files for analysis
+.Rmd

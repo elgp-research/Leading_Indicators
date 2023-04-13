@@ -43,3 +43,8 @@ vignettes/*.pdf
 
 # R markdown files for analysis
 .Rmd
+
+# Large data files
+db_indicators.csv
+db_sectors.csv
+
